@@ -37,6 +37,24 @@ public class ExtractRelationMembersToNewRelationAction extends AbstractRelationE
     }
 
     @Override
+    public boolean isExpertOnly() {
+        return true;
+    }
+
+    @Override
+    protected void updateEnabledState() {
+        final boolean newEnabledState = !editorAccess.getSelectionTableModel().getSelection().isEmpty()
+            && Optional.ofNullable(editorAccess.getTagModel().get("type")).filter(it -> it.getValue().matches("route|superroute")).isPresent();
+
+        putValue(SHORT_DESCRIPTION, (
+            newEnabledState
+                ? I18n.tr("Extract part of the route into new relation")
+                : I18n.tr("Extract into new relation (needs type=route tag and at least one selected relation member)")
+        ));
+        setEnabled(newEnabledState);
+    }
+
+    @Override
     public void actionPerformed(ActionEvent actionEvent) {
         final MemberTableModel memberTableModel = editorAccess.getMemberTableModel();
         final Collection<RelationMember> selectedMembers = memberTableModel.getSelectedMembers();
@@ -91,23 +109,5 @@ public class ExtractRelationMembersToNewRelationAction extends AbstractRelationE
         UndoRedoHandler.getInstance()
             .add(new ChangeCommand(originalRelation, newRelation));
         return extractedRelation;
-    }
-
-    @Override
-    public boolean isExpertOnly() {
-        return true;
-    }
-
-    @Override
-    protected void updateEnabledState() {
-        final boolean newEnabledState = !editorAccess.getSelectionTableModel().getSelection().isEmpty()
-            && Optional.ofNullable(editorAccess.getTagModel().get("type")).filter(it -> it.getValue().matches("route|superroute")).isPresent();
-
-        putValue(SHORT_DESCRIPTION, (
-            newEnabledState
-                ? I18n.tr("Extract part of the route into new relation")
-                : I18n.tr("Extract into new relation (needs type=route tag and at least one selected relation member)")
-        ));
-        setEnabled(newEnabledState);
     }
 }
